@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mamours">
+<title>Mamours 💞</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink: #e8637a;
+    --pink-light: #fdf0f2;
+    --pink-mid: #f5c4ce;
+    --pink-dark: #b8324a;
+    --bg: #faf9f7;
+    --card: #ffffff;
+    --text: #1a1614;
+    --text-muted: #7a6f6b;
+    --text-hint: #b5a9a5;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.14);
+    --radius: 20px;
+    --radius-sm: 12px;
+    --shadow: 0 2px 16px rgba(232,99,122,0.08);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 90px;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 52px 24px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .header-title span { color: var(--pink); }
+  .header-date {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* PROFILE PICKER */
+  .profile-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 20px;
+  }
+  .profile-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    text-align: center;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .profile-title em { color: var(--pink); font-style: italic; }
+  .profile-subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .profile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    margin-top: 12px;
+  }
+  .profile-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .profile-card:hover, .profile-card:active {
+    border-color: var(--pink);
+    background: var(--pink-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(232,99,122,0.15);
+  }
+  .profile-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--pink-light);
+    border: 2px solid var(--pink-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .profile-info strong {
+    display: block;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .profile-info span {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .profile-arrow {
+    margin-left: auto;
+    color: var(--text-hint);
+    font-size: 20px;
+  }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; padding: 0 20px; }
+
+  /* TODAY CARD */
+  .today-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .today-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pink);
+    margin-bottom: 14px;
+  }
+
+  /* MOOD GRID */
+  .mood-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .mood-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.2;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mood-btn .e { font-size: 26px; line-height: 1; }
+  .mood-btn:active { transform: scale(0.94); }
+  .mood-btn.selected {
+    border-color: var(--pink);
+    background: var(--pink-light);
+    color: var(--pink-dark);
+    box-shadow: 0 0 0 3px rgba(232,99,122,0.12);
+  }
+  .mood-btn.selected .e { transform: scale(1.15); display: block; }
+
+  /* NOTE */
+  .note-wrap { margin-bottom: 16px; }
+  .note-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    resize: none;
+    min-height: 72px;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  textarea:focus { outline: none; border-color: var(--pink); }
+  textarea::placeholder { color: var(--text-hint); }
+
+  /* SUBMIT */
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--pink);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 0.01em;
+  }
+  .submit-btn:active { background: var(--pink-dark); transform: scale(0.98); }
+  .submit-btn:disabled { background: var(--text-hint); cursor: not-allowed; }
+
+  /* SUCCESS */
+  .success-toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: #1a1614;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap;
+  }
+  .success-toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* PARTNER VIEW */
+  .partner-today {
+    background: linear-gradient(135deg, #fdf0f2 0%, #fff5f0 100%);
+    border: 1.5px solid var(--pink-mid);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .partner-mood-emoji { font-size: 56px; margin-bottom: 10px; line-height: 1; }
+  .partner-mood-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .partner-mood-note {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .partner-time {
+    font-size: 12px;
+    color: var(--text-hint);
+    margin-top: 10px;
+  }
+  .no-mood-today {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .no-mood-today .big { font-size: 36px; margin-bottom: 10px; }
+
+  /* HISTORY */
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-hint);
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  .hist-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .hist-emoji { font-size: 28px; flex-shrink: 0; }
+  .hist-info { flex: 1; min-width: 0; }
+  .hist-day { font-size: 12px; color: var(--text-hint); margin-bottom: 2px; }
+  .hist-mood { font-size: 14px; font-weight: 500; color: var(--text); }
+  .hist-note {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .empty-hist {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-hint);
+    font-size: 14px;
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(250,249,247,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 10px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-label { font-size: 10px; font-weight: 500; color: var(--text-hint); letter-spacing: 0.02em; }
+  .nav-item.active .nav-label { color: var(--pink); }
+  .nav-item.active .nav-icon { transform: scale(1.1); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* STATUS */
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #52c17a;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .status-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 20px 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    gap: 6px;
+  }
+  .user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--pink-light);
+    border: 1px solid var(--pink-mid);
+    border-radius: 20px;
+    padding: 5px 12px 5px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--pink-dark);
+    cursor: pointer;
+  }
+
+  /* LOADER */
+  .loader {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-hint);
+    font-size: 14px;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .loading { animation: pulse 1.4s ease infinite; }
+</style>
+</head>
+<body>
+
+<div class="success-toast" id="toast">✓ Humeur partagée 💞</div>
+
+<!-- PROFILE PICKER -->
+<div id="profile-screen" class="profile-screen">
+  <div>
+    <div class="profile-title">Bonjour,<br>c'est <em>qui</em> ?</div>
+    <p class="profile-subtitle" style="margin-top:10px;">Choisis ton profil pour continuer</p>
+  </div>
+  <div class="profile-cards">
+    <div class="profile-card" onclick="selectProfile('max','Max','👨‍💻')">
+      <div class="profile-avatar">👨‍💻</div>
+      <div class="profile-info">
+        <strong>Max</strong>
+        <span>Voir et partager mon humeur</span>
+      </div>
+      <span class="profile-arrow">›</span>
+    </div>
+    <div class="profile-card" onclick="selectProfile('compagne','Ma compagne','💗')">
+      <div class="profile-avatar">💗</div>
+      <div class="profile-info">
+        <strong>Ma compagne</strong>
+        <span>Voir et partager mon humeur</span>
+      </div>
+      <span class="profile-arrow">›</span>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app" style="display:none;">
+  <div class="header">
+    <div>
+      <div class="header-title">ma<span>mours</span> 💞</div>
+    </div>
+    <div class="header-date" id="header-date"></div>
+  </div>
+
+  <div class="status-bar">
+    <span class="status-dot" id="status-dot" style="background:#ccc"></span>
+    <span id="status-text" style="flex:1">Connexion…</span>
+    <span class="user-badge" onclick="logout()">
+      <span id="user-badge-emoji"></span>
+      <span id="user-badge-name"></span>
+    </span>
+  </div>
+
+  <div class="main">
+
+    <!-- MON HUMEUR -->
+    <div class="view active" id="view-share">
+      <div style="height:16px"></div>
+      <div class="today-card">
+        <div class="today-label">Mon humeur du jour</div>
+        <div class="mood-grid" id="mood-grid">
+          <button class="mood-btn" onclick="selectMood(this,'Rayonnant·e','🌟')"><span class="e">🌟</span>Rayonnant·e</button>
+          <button class="mood-btn" onclick="selectMood(this,'Joyeux·se','😄')"><span class="e">😄</span>Joyeux·se</button>
+          <button class="mood-btn" onclick="selectMood(this,'Zen','😌')"><span class="e">😌</span>Zen</button>
+          <button class="mood-btn" onclick="selectMood(this,'Tendre','🥰')"><span class="e">🥰</span>Tendre</button>
+          <button class="mood-btn" onclick="selectMood(this,'Fatigué·e','😴')"><span class="e">😴</span>Fatigué·e</button>
+          <button class="mood-btn" onclick="selectMood(this,'Stressé·e','😰')"><span class="e">😰</span>Stressé·e</button>
+          <button class="mood-btn" onclick="selectMood(this,'Mélancolique','🌧️')"><span class="e">🌧️</span>Mélancolique</button>
+          <button class="mood-btn" onclick="selectMood(this,'En colère','😤')"><span class="e">😤</span>En colère</button>
+        </div>
+        <div class="note-wrap">
+          <div class="note-label">Note (optionnelle)</div>
+          <textarea id="mood-note" placeholder="Quelques mots si tu veux…" rows="3"></textarea>
+        </div>
+        <button class="submit-btn" id="submit-btn" onclick="submitMood()">Partager mon humeur</button>
+      </div>
+
+      <div class="section-title">Mes 7 derniers jours</div>
+      <div class="history-list" id="my-history">
+        <div class="loader loading">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- SON HUMEUR -->
+    <div class="view" id="view-partner">
+      <div style="height:16px"></div>
+      <div class="today-card" style="padding-bottom:14px;">
+        <div class="today-label" id="partner-label">Humeur du jour</div>
+        <div id="partner-today"><div class="loader loading">Chargement…</div></div>
+      </div>
+      <div class="section-title">Ses 7 derniers jours</div>
+      <div class="history-list" id="partner-history">
+        <div class="loader loading">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE COMMUN -->
+    <div class="view" id="view-history">
+      <div style="height:16px"></div>
+      <div class="section-title">Nos humeurs — 7 jours</div>
+      <div id="combined-history"><div class="loader loading">Chargement…</div></div>
+    </div>
+
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-item active" id="nav-share" onclick="switchView('share')">
+      <div class="nav-icon">🌈</div>
+      <div class="nav-label">Mon humeur</div>
+    </div>
+    <div class="nav-item" id="nav-partner" onclick="switchView('partner')">
+      <div class="nav-icon">💞</div>
+      <div class="nav-label" id="nav-partner-label">Son humeur</div>
+    </div>
+    <div class="nav-item" id="nav-history" onclick="switchView('history')">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">Ensemble</div>
+    </div>
+  </nav>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDIY3xyps20ruZTA0LkxRgQVuzaX9M64WM",
+  authDomain: "mamours-3cbd4.firebaseapp.com",
+  databaseURL: "https://mamours-3cbd4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mamours-3cbd4",
+  storageBucket: "mamours-3cbd4.firebasestorage.app",
+  messagingSenderId: "432792996787",
+  appId: "1:432792996787:web:c182f688ad83d64d5d59c6"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let currentUser = null;
+let selectedMood = null;
+let selectedEmoji = null;
+let unsubscribers = [];
+
+const profiles = {
+  max: { name: 'Max', emoji: '👨‍💻', partner: 'compagne', partnerName: 'Ta compagne' },
+  compagne: { name: 'Ma compagne', emoji: '💗', partner: 'max', partnerName: 'Max' }
+};
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function dayLabel(key) {
+  const today = todayKey();
+  const d = new Date(key + 'T12:00:00');
+  const t = new Date(today + 'T12:00:00');
+  const diff = Math.round((t - d) / 86400000);
+  if (diff === 0) return 'Aujourd\'hui';
+  if (diff === 1) return 'Hier';
+  return `Il y a ${diff} jours`;
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return `Partagé à ${d.getHours()}h${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function selectProfile(id, name, emoji) {
+  currentUser = id;
+  localStorage.setItem('moodUser', id);
+  showApp();
+}
+
+function logout() {
+  localStorage.removeItem('moodUser');
+  currentUser = null;
+  unsubscribers.forEach(u => u());
+  unsubscribers = [];
+  document.getElementById('profile-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  const p = profiles[currentUser];
+  document.getElementById('profile-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('user-badge-emoji').textContent = p.emoji;
+  document.getElementById('user-badge-name').textContent = p.name;
+  document.getElementById('nav-partner-label').textContent = p.partnerName.split(' ')[0];
+  document.getElementById('partner-label').textContent = `Humeur de ${p.partnerName}`;
+
+  const now = new Date();
+  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const months = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+  document.getElementById('header-date').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+
+  connectFirebase();
+}
+
+function connectFirebase() {
+  unsubscribers.forEach(u => u());
+  unsubscribers = [];
+
+  const dot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+
+  const connRef = db.ref('.info/connected');
+  const unsub = connRef.on('value', snap => {
+    if (snap.val()) {
+      dot.style.background = '#52c17a';
+      statusText.textContent = 'Connecté';
+    } else {
+      dot.style.background = '#f0a500';
+      statusText.textContent = 'Hors ligne';
+    }
+  });
+  unsubscribers.push(() => connRef.off('value', unsub));
+
+  loadMyHistory();
+  loadPartnerData();
+  loadCombined();
+  loadTodayMood();
+}
+
+function loadTodayMood() {
+  const key = todayKey();
+  const ref = db.ref(`moods/${currentUser}/${key}`);
+  ref.once('value', snap => {
+    if (snap.exists()) {
+      const d = snap.val();
+      // Pre-select today's mood if already shared
+      document.querySelectorAll('.mood-btn').forEach(btn => {
+        if (btn.dataset && btn.getAttribute('onclick').includes(`'${d.mood}'`)) {
+          btn.classList.add('selected');
+        }
+      });
+      if (d.note) document.getElementById('mood-note').value = d.note;
+      selectedMood = d.mood;
+      selectedEmoji = d.emoji;
+    }
+  });
+}
+
+function selectMood(btn, mood, emoji) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedMood = mood;
+  selectedEmoji = emoji;
+}
+
+function submitMood() {
+  if (!selectedMood) { showToast('Choisis d\'abord une humeur !', true); return; }
+  const note = document.getElementById('mood-note').value.trim();
+  const key = todayKey();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  db.ref(`moods/${currentUser}/${key}`).set({
+    mood: selectedMood,
+    emoji: selectedEmoji,
+    note: note,
+    timestamp: Date.now()
+  }).then(() => {
+    showToast('Humeur partagée 💞');
+    btn.disabled = false;
+    btn.textContent = 'Mettre à jour mon humeur';
+    loadMyHistory();
+    loadPartnerData();
+    loadCombined();
+  }).catch(() => {
+    showToast('Erreur de connexion', true);
+    btn.disabled = false;
+    btn.textContent = 'Partager mon humeur';
+  });
+}
+
+function loadMyHistory() {
+  const container = document.getElementById('my-history');
+  db.ref(`moods/${currentUser}`).orderByKey().limitToLast(7).once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.unshift({ key: child.key, ...child.val() }));
+    if (!entries.length) {
+      container.innerHTML = '<div class="empty-hist">Aucune humeur encore 🌱</div>';
+      return;
+    }
+    container.innerHTML = entries.map(e => `
+      <div class="hist-card">
+        <div class="hist-emoji">${e.emoji}</div>
+        <div class="hist-info">
+          <div class="hist-day">${dayLabel(e.key)}</div>
+          <div class="hist-mood">${e.mood}</div>
+          ${e.note ? `<div class="hist-note">${e.note}</div>` : ''}
+        </div>
+      </div>`).join('');
+  });
+}
+
+function loadPartnerData() {
+  const partner = profiles[currentUser].partner;
+  const todayCard = document.getElementById('partner-today');
+  const histContainer = document.getElementById('partner-history');
+
+  db.ref(`moods/${partner}`).orderByKey().limitToLast(7).once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.unshift({ key: child.key, ...child.val() }));
+
+    const today = entries.find(e => e.key === todayKey());
+    if (today) {
+      todayCard.innerHTML = `
+        <div style="text-align:center;">
+          <div class="partner-mood-emoji">${today.emoji}</div>
+          <div class="partner-mood-name">${today.mood}</div>
+          ${today.note ? `<div class="partner-mood-note">"${today.note}"</div>` : ''}
+          <div class="partner-time">${formatTime(today.timestamp)}</div>
+        </div>`;
+    } else {
+      todayCard.innerHTML = `<div class="no-mood-today"><div class="big">🤍</div>Pas encore partagé aujourd'hui</div>`;
+    }
+
+    const past = entries.filter(e => e.key !== todayKey());
+    if (!past.length) {
+      histContainer.innerHTML = '<div class="empty-hist">Pas encore d\'historique</div>';
+    } else {
+      histContainer.innerHTML = past.map(e => `
+        <div class="hist-card">
+          <div class="hist-emoji">${e.emoji}</div>
+          <div class="hist-info">
+            <div class="hist-day">${dayLabel(e.key)}</div>
+            <div class="hist-mood">${e.mood}</div>
+            ${e.note ? `<div class="hist-note">${e.note}</div>` : ''}
+          </div>
+        </div>`).join('');
+    }
+  });
+}
+
+function loadCombined() {
+  const partner = profiles[currentUser].partner;
+  const partnerName = profiles[currentUser].partnerName;
+  const myName = profiles[currentUser].name;
+  const container = document.getElementById('combined-history');
+
+  Promise.all([
+    db.ref(`moods/${currentUser}`).orderByKey().limitToLast(7).once('value'),
+    db.ref(`moods/${partner}`).orderByKey().limitToLast(7).once('value')
+  ]).then(([mySnap, partnerSnap]) => {
+    const allDays = new Set();
+    const myData = {}, partnerData = {};
+    mySnap.forEach(c => { myData[c.key] = c.val(); allDays.add(c.key); });
+    partnerSnap.forEach(c => { partnerData[c.key] = c.val(); allDays.add(c.key); });
+
+    const days = [...allDays].sort().reverse().slice(0,7);
+    if (!days.length) {
+      container.innerHTML = '<div class="empty-hist">Aucune humeur partagée encore 🌱</div>';
+      return;
+    }
+
+    container.innerHTML = days.map(day => {
+      const me = myData[day];
+      const them = partnerData[day];
+      return `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:var(--text-hint);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">${dayLabel(day)}</div>
+          <div style="display:flex;gap:10px;">
+            ${me ? `<div class="hist-card" style="flex:1;"><div class="hist-emoji">${me.emoji}</div><div class="hist-info"><div class="hist-day">${myName}</div><div class="hist-mood">${me.mood}</div>${me.note?`<div class="hist-note">${me.note}</div>`:''}</div></div>` : `<div class="hist-card" style="flex:1;opacity:0.4;"><div class="hist-emoji">🤍</div><div class="hist-info"><div class="hist-day">${myName}</div><div class="hist-mood" style="color:var(--text-hint)">—</div></div></div>`}
+            ${them ? `<div class="hist-card" style="flex:1;"><div class="hist-emoji">${them.emoji}</div><div class="hist-info"><div class="hist-day">${partnerName}</div><div class="hist-mood">${them.mood}</div>${them.note?`<div class="hist-note">${them.note}</div>`:''}</div></div>` : `<div class="hist-card" style="flex:1;opacity:0.4;"><div class="hist-emoji">🤍</div><div class="hist-info"><div class="hist-day">${partnerName}</div><div class="hist-mood" style="color:var(--text-hint)">—</div></div></div>`}
+          </div>
+        </div>`;
+    }).join('');
+  });
+}
+
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.getElementById('nav-'+view).classList.add('active');
+}
+
+function showToast(msg, error=false) {
+  const t = document.getElementById('toast');
+  t.textContent = (error ? '⚠️ ' : '✓ ') + msg;
+  t.style.background = error ? '#c0392b' : '#1a1614';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Auto-login
+const saved = localStorage.getItem('moodUser');
+if (saved && profiles[saved]) {
+  currentUser = saved;
+  showApp();
+}
+</script>
+</body>
+</html>
