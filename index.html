@@ -164,36 +164,48 @@
   .mood-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
+    gap: 7px;
     margin-bottom: 16px;
   }
   .mood-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 12px 6px;
+    gap: 4px;
+    padding: 10px 4px 8px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--bg);
     cursor: pointer;
     transition: all 0.15s;
     font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
     line-height: 1.2;
     text-align: center;
     -webkit-tap-highlight-color: transparent;
+    min-width: 0;
+    overflow: hidden;
   }
-  .mood-btn .e { font-size: 26px; line-height: 1; }
+  .mood-btn .e { font-size: 22px; line-height: 1; flex-shrink: 0; }
+  .mood-btn span:not(.e) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
   .mood-btn:active { transform: scale(0.94); }
   .mood-btn.selected {
     border-color: var(--pink);
     background: var(--pink-light);
     color: var(--pink-dark);
-    box-shadow: 0 0 0 3px rgba(232,99,122,0.12);
+    box-shadow: 0 0 0 2px rgba(232,99,122,0.15);
   }
-  .mood-btn.selected .e { transform: scale(1.15); display: block; }
+  .mood-btn.selected .e { transform: scale(1.1); display: block; }
+  .mood-btn.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 3px; right: 4px;
+    font-size: 9px;
+    color: var(--pink);
+    font-weight: 700;
+  }
+  .mood-btn { position: relative; }
 
   /* NOTE */
   .note-wrap { margin-bottom: 16px; }
@@ -510,6 +522,7 @@
           <button class="mood-btn" onclick="selectMood(this,'Anxieux·se','😟')"><span class="e">😟</span>Anxieux·se</button>
           <button class="mood-btn" onclick="selectMood(this,'Déprimé·e','😔')"><span class="e">😔</span>Déprimé·e</button>
         </div>
+        <div style="font-size:11px;color:var(--text-hint);text-align:center;margin:-8px 0 12px;">Tu peux sélectionner jusqu'à 3 humeurs</div>
         <div class="slider-wrap">
           <div class="slider-label">
             <span>Sensation globale du jour</span>
@@ -693,8 +706,13 @@ function loadTodayMood() {
     if (snap.exists()) {
       const d = snap.val();
       // Pre-select today's mood if already shared
+      const moodsToRestore = d.moods || (d.mood ? [{mood: d.mood, emoji: d.emoji}] : []);
+      selectedMoods = moodsToRestore;
+      selectedMood = d.mood;
+      selectedEmoji = d.emoji;
       document.querySelectorAll('.mood-btn').forEach(btn => {
-        if (btn.dataset && btn.getAttribute('onclick').includes(`'${d.mood}'`)) {
+        const onclickAttr = btn.getAttribute('onclick') || '';
+        if (moodsToRestore.some(m => onclickAttr.includes(`'${m.mood}'`))) {
           btn.classList.add('selected');
         }
       });
@@ -705,8 +723,6 @@ function loadTodayMood() {
         sl.value = d.score;
         updateSlider(sl);
       }
-      selectedMood = d.mood;
-      selectedEmoji = d.emoji;
     }
   });
 }
@@ -717,15 +733,34 @@ function updateSlider(el) {
   document.getElementById('slider-display').textContent = v;
 }
 
+// Multi-select: selectedMoods = array of {mood, emoji}
+let selectedMoods = [];
+
 function selectMood(btn, mood, emoji) {
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedMood = mood;
-  selectedEmoji = emoji;
+  const idx = selectedMoods.findIndex(m => m.mood === mood);
+  if (idx > -1) {
+    // Deselect
+    selectedMoods.splice(idx, 1);
+    btn.classList.remove('selected');
+  } else {
+    // Select (max 3)
+    if (selectedMoods.length >= 3) {
+      // Remove first selected
+      const first = selectedMoods.shift();
+      document.querySelectorAll('.mood-btn').forEach(b => {
+        if (b.getAttribute('onclick').includes(`'${first.mood}'`)) b.classList.remove('selected');
+      });
+    }
+    selectedMoods.push({ mood, emoji });
+    btn.classList.add('selected');
+  }
+  // Update legacy vars for compat
+  selectedMood = selectedMoods.map(m => m.mood).join(', ');
+  selectedEmoji = selectedMoods.length > 0 ? selectedMoods[0].emoji : null;
 }
 
 function submitMood() {
-  if (!selectedMood) { showToast('Choisis d\'abord une humeur !', true); return; }
+  if (!selectedMoods || selectedMoods.length === 0) { showToast('Choisis au moins une humeur !', true); return; }
   const note = document.getElementById('mood-note').value.trim();
   const besoins = document.getElementById('mood-besoins').value.trim();
   const score = parseInt(document.getElementById('mood-score').value);
@@ -735,8 +770,9 @@ function submitMood() {
   btn.textContent = '…';
 
   db.ref(`moods/${currentUser}/${key}`).set({
-    mood: selectedMood,
-    emoji: selectedEmoji,
+    mood: selectedMoods.map(m => m.mood).join(', '),
+    emoji: selectedMoods.map(m => m.emoji).join(''),
+    moods: selectedMoods,
     note: note,
     besoins: besoins,
     score: score,
