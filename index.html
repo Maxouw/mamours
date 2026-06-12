@@ -552,7 +552,7 @@
         <button class="submit-btn" id="submit-btn" onclick="submitMood()">Partager mon humeur</button>
       </div>
 
-      <div class="section-title">Mes 7 derniers jours</div>
+      <div class="section-title">Mon historique</div>
       <div class="history-list" id="my-history">
         <div class="loader loading">Chargement…</div>
       </div>
@@ -565,7 +565,7 @@
         <div class="today-label" id="partner-label">Humeur du jour</div>
         <div id="partner-today"><div class="loader loading">Chargement…</div></div>
       </div>
-      <div class="section-title">Ses 7 derniers jours</div>
+      <div class="section-title">Son historique</div>
       <div class="history-list" id="partner-history">
         <div class="loader loading">Chargement…</div>
       </div>
@@ -574,7 +574,7 @@
     <!-- HISTORIQUE COMMUN -->
     <div class="view" id="view-history">
       <div style="height:16px"></div>
-      <div class="section-title">Nos humeurs — 7 jours</div>
+      <div class="section-title">Nos humeurs</div>
       <div id="combined-history"><div class="loader loading">Chargement…</div></div>
     </div>
 
@@ -797,7 +797,7 @@ function submitMood() {
 
 function loadMyHistory() {
   const container = document.getElementById('my-history');
-  db.ref(`moods/${currentUser}`).orderByKey().limitToLast(7).once('value', snap => {
+  db.ref(`moods/${currentUser}`).orderByKey().limitToLast(30).once('value', snap => {
     const entries = [];
     snap.forEach(child => entries.unshift({ key: child.key, ...child.val() }));
     if (!entries.length) {
@@ -837,7 +837,7 @@ function renderPartnerEntries(entries) {
     todayCard.innerHTML = `<div class="no-mood-today"><div class="big">🤍</div>Pas encore partagé aujourd'hui</div>`;
   }
 
-  const past = entries.filter(e => e.key !== todayKey());
+  const past = entries.filter(e => e.key !== todayKey()).slice(0, 14);
   if (!past.length) {
     histContainer.innerHTML = '<div class="empty-hist">Pas encore d\'historique</div>';
   } else {
@@ -857,13 +857,13 @@ function renderPartnerEntries(entries) {
 function loadPartnerData() {
   const partner = profiles[currentUser].partner;
 
-  // Unsubscribe previous listener if any
-  if (window._partnerListener) {
-    db.ref(`moods/${partner}`).off('value', window._partnerListener);
+  // Properly unsubscribe: keep the ref, not just the callback
+  if (window._partnerRef && window._partnerListener) {
+    window._partnerRef.off('value', window._partnerListener);
   }
 
-  const ref = db.ref(`moods/${partner}`).orderByKey().limitToLast(7);
-  window._partnerListener = ref.on('value', snap => {
+  window._partnerRef = db.ref(`moods/${partner}`).orderByKey().limitToLast(30);
+  window._partnerListener = window._partnerRef.on('value', snap => {
     const entries = [];
     snap.forEach(child => entries.unshift({ key: child.key, ...child.val() }));
     renderPartnerEntries(entries);
@@ -913,17 +913,17 @@ function loadCombined() {
   const myName = profiles[currentUser].name;
   const container = document.getElementById('combined-history');
 
-  // Unsubscribe previous listeners
-  if (window._combinedListeners) {
-    window._combinedListeners.forEach(({ref, fn}) => ref.off('value', fn));
+  // Properly unsubscribe previous listeners (keep refs)
+  if (window._combinedRefs) {
+    window._combinedRefs.forEach(({ref, fn}) => ref.off('value', fn));
   }
-  window._combinedListeners = [];
+  window._combinedRefs = [];
 
   let myData = {}, partnerData = {};
 
   const renderAll = () => {
     const allDays = new Set([...Object.keys(myData), ...Object.keys(partnerData)]);
-    const days = [...allDays].sort().reverse().slice(0, 7);
+    const days = [...allDays].sort().reverse().slice(0, 14);
     if (!days.length) {
       container.innerHTML = '<div class="empty-hist">Aucune humeur partagée encore 🌱</div>';
       return;
@@ -933,21 +933,21 @@ function loadCombined() {
     ).join('');
   };
 
-  const myRef = db.ref(`moods/${currentUser}`).orderByKey().limitToLast(7);
+  const myRef = db.ref(`moods/${currentUser}`).orderByKey().limitToLast(30);
   const myFn = myRef.on('value', snap => {
     myData = {};
     snap.forEach(c => { myData[c.key] = c.val(); });
     renderAll();
   });
-  window._combinedListeners.push({ref: myRef, fn: myFn});
+  window._combinedRefs.push({ref: myRef, fn: myFn});
 
-  const themRef = db.ref(`moods/${partner}`).orderByKey().limitToLast(7);
+  const themRef = db.ref(`moods/${partner}`).orderByKey().limitToLast(30);
   const themFn = themRef.on('value', snap => {
     partnerData = {};
     snap.forEach(c => { partnerData[c.key] = c.val(); });
     renderAll();
   });
-  window._combinedListeners.push({ref: themRef, fn: themFn});
+  window._combinedRefs.push({ref: themRef, fn: themFn});
 }
 
 function switchView(view) {
