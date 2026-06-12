@@ -817,44 +817,94 @@ function loadMyHistory() {
   });
 }
 
-function loadPartnerData() {
-  const partner = profiles[currentUser].partner;
+function renderPartnerEntries(entries) {
   const todayCard = document.getElementById('partner-today');
   const histContainer = document.getElementById('partner-history');
+  if (!todayCard || !histContainer) return;
 
-  db.ref(`moods/${partner}`).orderByKey().limitToLast(7).once('value', snap => {
+  const today = entries.find(e => e.key === todayKey());
+  if (today) {
+    todayCard.innerHTML = `
+      <div style="text-align:center;">
+        <div class="partner-mood-emoji">${today.emoji}</div>
+        <div class="partner-mood-name">${today.mood}</div>
+        ${today.score ? `<div style="margin:6px 0;"><span class="score-badge">☀️ ${today.score}/10</span></div>` : ''}
+        ${today.besoins ? `<div class="partner-mood-note">🫶 <em>${today.besoins}</em></div>` : ''}
+        ${today.note ? `<div class="partner-mood-note">"${today.note}"</div>` : ''}
+        <div class="partner-time">${formatTime(today.timestamp)}</div>
+      </div>`;
+  } else {
+    todayCard.innerHTML = `<div class="no-mood-today"><div class="big">🤍</div>Pas encore partagé aujourd'hui</div>`;
+  }
+
+  const past = entries.filter(e => e.key !== todayKey());
+  if (!past.length) {
+    histContainer.innerHTML = '<div class="empty-hist">Pas encore d\'historique</div>';
+  } else {
+    histContainer.innerHTML = past.map(e => `
+      <div class="hist-card">
+        <div class="hist-emoji">${e.emoji}</div>
+        <div class="hist-info">
+          <div class="hist-day">${dayLabel(e.key)}</div>
+          <div class="hist-mood">${e.mood}${e.score ? ` <span class="score-badge">☀️ ${e.score}/10</span>` : ''}</div>
+          ${e.besoins ? `<div class="hist-note">🫶 ${e.besoins}</div>` : ''}
+          ${e.note ? `<div class="hist-note">💬 ${e.note}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+}
+
+function loadPartnerData() {
+  const partner = profiles[currentUser].partner;
+
+  // Unsubscribe previous listener if any
+  if (window._partnerListener) {
+    db.ref(`moods/${partner}`).off('value', window._partnerListener);
+  }
+
+  const ref = db.ref(`moods/${partner}`).orderByKey().limitToLast(7);
+  window._partnerListener = ref.on('value', snap => {
     const entries = [];
     snap.forEach(child => entries.unshift({ key: child.key, ...child.val() }));
-
-    const today = entries.find(e => e.key === todayKey());
-    if (today) {
-      todayCard.innerHTML = `
-        <div style="text-align:center;">
-          <div class="partner-mood-emoji">${today.emoji}</div>
-          <div class="partner-mood-name">${today.mood}</div>
-          ${today.note ? `<div class="partner-mood-note">"${today.note}"</div>` : ''}
-          <div class="partner-time">${formatTime(today.timestamp)}</div>
-        </div>`;
-    } else {
-      todayCard.innerHTML = `<div class="no-mood-today"><div class="big">🤍</div>Pas encore partagé aujourd'hui</div>`;
-    }
-
-    const past = entries.filter(e => e.key !== todayKey());
-    if (!past.length) {
-      histContainer.innerHTML = '<div class="empty-hist">Pas encore d\'historique</div>';
-    } else {
-      histContainer.innerHTML = past.map(e => `
-        <div class="hist-card">
-          <div class="hist-emoji">${e.emoji}</div>
-          <div class="hist-info">
-            <div class="hist-day">${dayLabel(e.key)}</div>
-            <div class="hist-mood">${e.mood}${e.score ? ` <span class="score-badge">☀️ ${e.score}/10</span>` : ''}</div>
-            ${e.besoins ? `<div class="hist-note">🫶 ${e.besoins}</div>` : ''}
-            ${e.note ? `<div class="hist-note">💬 ${e.note}</div>` : ''}
-          </div>
-        </div>`).join('');
-    }
+    renderPartnerEntries(entries);
   });
+}
+
+function renderCombinedDay(day, me, them, myName, partnerName) {
+  const mePart = me
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:26px;width:36px;text-align:center;">${me.emoji}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;color:var(--text-hint);margin-bottom:1px;">${myName}</div>
+          <div style="font-size:14px;font-weight:500;">${me.mood}${me.score ? ` <span class="score-badge">☀️ ${me.score}/10</span>` : ''}</div>
+          ${me.besoins ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">🫶 ${me.besoins}</div>` : ''}
+          ${me.note ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">💬 ${me.note}</div>` : ''}
+        </div>
+      </div>`
+    : `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);opacity:0.35;">
+        <div style="font-size:26px;width:36px;text-align:center;">🤍</div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--text-hint);">${myName}</div><div style="font-size:13px;color:var(--text-hint);">—</div></div>
+      </div>`;
+
+  const themPart = them
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;">
+        <div style="font-size:26px;width:36px;text-align:center;">${them.emoji}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;color:var(--text-hint);margin-bottom:1px;">${partnerName}</div>
+          <div style="font-size:14px;font-weight:500;">${them.mood}${them.score ? ` <span class="score-badge">☀️ ${them.score}/10</span>` : ''}</div>
+          ${them.besoins ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">🫶 ${them.besoins}</div>` : ''}
+          ${them.note ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">💬 ${them.note}</div>` : ''}
+        </div>
+      </div>`
+    : `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;opacity:0.35;">
+        <div style="font-size:26px;width:36px;text-align:center;">🤍</div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--text-hint);">${partnerName}</div><div style="font-size:13px;color:var(--text-hint);">—</div></div>
+      </div>`;
+
+  return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 14px;margin-bottom:12px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--pink);padding:10px 0 4px;">${dayLabel(day)}</div>
+    ${mePart}${themPart}
+  </div>`;
 }
 
 function loadCombined() {
@@ -863,34 +913,41 @@ function loadCombined() {
   const myName = profiles[currentUser].name;
   const container = document.getElementById('combined-history');
 
-  Promise.all([
-    db.ref(`moods/${currentUser}`).orderByKey().limitToLast(7).once('value'),
-    db.ref(`moods/${partner}`).orderByKey().limitToLast(7).once('value')
-  ]).then(([mySnap, partnerSnap]) => {
-    const allDays = new Set();
-    const myData = {}, partnerData = {};
-    mySnap.forEach(c => { myData[c.key] = c.val(); allDays.add(c.key); });
-    partnerSnap.forEach(c => { partnerData[c.key] = c.val(); allDays.add(c.key); });
+  // Unsubscribe previous listeners
+  if (window._combinedListeners) {
+    window._combinedListeners.forEach(({ref, fn}) => ref.off('value', fn));
+  }
+  window._combinedListeners = [];
 
-    const days = [...allDays].sort().reverse().slice(0,7);
+  let myData = {}, partnerData = {};
+
+  const renderAll = () => {
+    const allDays = new Set([...Object.keys(myData), ...Object.keys(partnerData)]);
+    const days = [...allDays].sort().reverse().slice(0, 7);
     if (!days.length) {
       container.innerHTML = '<div class="empty-hist">Aucune humeur partagée encore 🌱</div>';
       return;
     }
+    container.innerHTML = days.map(day =>
+      renderCombinedDay(day, myData[day], partnerData[day], myName, partnerName)
+    ).join('');
+  };
 
-    container.innerHTML = days.map(day => {
-      const me = myData[day];
-      const them = partnerData[day];
-      return `
-        <div style="margin-bottom:16px;">
-          <div style="font-size:12px;color:var(--text-hint);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">${dayLabel(day)}</div>
-          <div style="display:flex;gap:10px;">
-            ${me ? `<div class="hist-card" style="flex:1;"><div class="hist-emoji">${me.emoji}</div><div class="hist-info"><div class="hist-day">${myName}</div><div class="hist-mood">${me.mood}${me.score?` <span class="score-badge">☀️ ${me.score}/10</span>`:''}</div>${me.besoins?`<div class="hist-note">🫶 ${me.besoins}</div>`:''}</div></div>` : `<div class="hist-card" style="flex:1;opacity:0.4;"><div class="hist-emoji">🤍</div><div class="hist-info"><div class="hist-day">${myName}</div><div class="hist-mood" style="color:var(--text-hint)">—</div></div></div>`}
-            ${them ? `<div class="hist-card" style="flex:1;"><div class="hist-emoji">${them.emoji}</div><div class="hist-info"><div class="hist-day">${partnerName}</div><div class="hist-mood">${them.mood}${them.score?` <span class="score-badge">☀️ ${them.score}/10</span>`:''}</div>${them.besoins?`<div class="hist-note">🫶 ${them.besoins}</div>`:''}</div></div>` : `<div class="hist-card" style="flex:1;opacity:0.4;"><div class="hist-emoji">🤍</div><div class="hist-info"><div class="hist-day">${partnerName}</div><div class="hist-mood" style="color:var(--text-hint)">—</div></div></div>`}
-          </div>
-        </div>`;
-    }).join('');
+  const myRef = db.ref(`moods/${currentUser}`).orderByKey().limitToLast(7);
+  const myFn = myRef.on('value', snap => {
+    myData = {};
+    snap.forEach(c => { myData[c.key] = c.val(); });
+    renderAll();
   });
+  window._combinedListeners.push({ref: myRef, fn: myFn});
+
+  const themRef = db.ref(`moods/${partner}`).orderByKey().limitToLast(7);
+  const themFn = themRef.on('value', snap => {
+    partnerData = {};
+    snap.forEach(c => { partnerData[c.key] = c.val(); });
+    renderAll();
+  });
+  window._combinedListeners.push({ref: themRef, fn: themFn});
 }
 
 function switchView(view) {
