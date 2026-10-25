@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e7c86">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Aquarium">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Paramètres%20Aquarium%22%2C%22short_name%22%3A%22Aquarium%22%2C%22start_url%22%3A%22.%2Faquarium.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f3f8f8%22%2C%22theme_color%22%3A%22%230e7c86%22%2C%22orientation%22%3A%22portrait%22%7D">
+<title>Paramètres Aquarium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #0e7c86;
+  --accent-light: #e3f3f4;
+  --accent-dark: #0a5a62;
+  --bg: #f3f8f8;
+  --card: #ffffff;
+  --text: #13201f;
+  --text-muted: #5f6f6e;
+  --border: #dce7e7;
+  --ok: #1f9d55;
+  --ok-bg: #e4f6ea;
+  --warn: #c98a00;
+  --warn-bg: #fdf3d9;
+  --bad: #d23c3c;
+  --bad-bg: #fbe5e5;
+  --band: rgba(31,157,85,.12);
+  --shadow: 0 1px 3px rgba(10,40,40,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --accent: #3cc2cc; --accent-light: #12333a; --accent-dark: #8fe3e9;
+    --bg: #0c1617; --card: #142224; --text: #e4efee; --text-muted: #91a5a4; --border: #24393b;
+    --ok: #4cd182; --ok-bg: #143322; --warn: #f0b93a; --warn-bg: #3a2f10; --bad: #f07272; --bad-bg: #3d1a1a;
+    --band: rgba(76,209,130,.12); --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --accent: #3cc2cc; --accent-light: #12333a; --accent-dark: #8fe3e9;
+  --bg: #0c1617; --card: #142224; --text: #e4efee; --text-muted: #91a5a4; --border: #24393b;
+  --ok: #4cd182; --ok-bg: #143322; --warn: #f0b93a; --warn-bg: #3a2f10; --bad: #f07272; --bad-bg: #3d1a1a;
+  --band: rgba(76,209,130,.12); --shadow: none;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; }
+body { min-height: 100vh; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+button, input, select, textarea { font: inherit; color: inherit; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+header { position: sticky; top: 0; z-index: 10; background: var(--bg); padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--border); }
+header .wrap { display: flex; align-items: center; gap: 12px; padding-top: 12px; padding-bottom: 12px; }
+h1 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 1.5rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 1.25rem; margin: 20px 0 10px; }
+select.tank { max-width: 50%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); }
+
+nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; background: var(--card); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
+nav .wrap { display: flex; padding: 0; }
+nav button { flex: 1; background: none; border: 0; padding: 8px 2px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .72rem; color: var(--text-muted); cursor: pointer; }
+nav button svg { width: 24px; height: 24px; }
+nav button.active { color: var(--accent); font-weight: 700; }
+nav button.add span.ico { background: var(--accent); color: #fff; border-radius: 50%; width: 40px; height: 40px; display: grid; place-items: center; margin-top: -18px; box-shadow: 0 2px 8px rgba(14,124,134,.35); }
+nav button.add span.ico svg { width: 22px; height: 22px; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.stat { position: relative; cursor: pointer; }
+.stat .lbl { font-size: .8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.stat .val { font-size: 1.6rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat .val small { font-size: .8rem; font-weight: 400; color: var(--text-muted); margin-left: 3px; }
+.stat .sub { font-size: .75rem; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between; gap: 4px; }
+.stat.ok { border-left: 4px solid var(--ok); }
+.stat.warn { border-left: 4px solid var(--warn); }
+.stat.bad { border-left: 4px solid var(--bad); }
+.stat.none .val { color: var(--text-muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.none { background: var(--border); }
+.trend.up::before { content: "▲ "; } .trend.down::before { content: "▼ "; } .trend.eq::before { content: "= "; }
+
+.banner { border-radius: 12px; padding: 12px 14px; margin-top: 16px; font-size: .92rem; line-height: 1.4; }
+.banner.ok { background: var(--ok-bg); color: var(--text); }
+.banner.warn { background: var(--warn-bg); }
+.banner.bad { background: var(--bad-bg); }
+.banner strong { display: block; margin-bottom: 2px; }
+.banner ul { margin: 4px 0 0 18px; }
+
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.meta .card { padding: 12px; }
+.meta .k { font-size: .75rem; color: var(--text-muted); }
+.meta .v { font-weight: 700; margin-top: 2px; }
+
+form .field { margin-bottom: 12px; }
+label.l { display: block; font-size: .85rem; color: var(--text-muted); margin-bottom: 4px; }
+input[type=text], input[type=number], input[type=datetime-local], select, textarea {
+  width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); font-size: 16px;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+textarea { min-height: 70px; resize: vertical; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.pin { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+.pin label { font-size: .85rem; font-weight: 500; display: flex; justify-content: space-between; gap: 4px; }
+.pin label span { color: var(--text-muted); font-weight: 400; font-size: .75rem; }
+.pin input { margin-top: 6px; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.pin .hint { font-size: .72rem; color: var(--text-muted); margin-top: 4px; }
+.pin.ok input { border-color: var(--ok); background: var(--ok-bg); }
+.pin.warn input { border-color: var(--warn); background: var(--warn-bg); }
+.pin.bad input { border-color: var(--bad); background: var(--bad-bg); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 12px; padding: 12px 16px; background: var(--accent); color: #fff; font-weight: 700; cursor: pointer; }
+.btn.block { width: 100%; }
+.btn.ghost { background: var(--accent-light); color: var(--accent-dark); }
+.btn.danger { background: var(--bad-bg); color: var(--bad); }
+.btn.sm { padding: 8px 12px; font-size: .85rem; border-radius: 10px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > * { flex: 1; }
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip { border: 1px solid var(--border); background: var(--card); border-radius: 999px; padding: 6px 12px; font-size: .85rem; cursor: pointer; }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.chart { margin-bottom: 12px; }
+.chart .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 8px; }
+.chart .head b { font-weight: 700; }
+.chart .head span { font-size: .78rem; color: var(--text-muted); }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart svg text { fill: var(--text-muted); font-size: 9.5px; font-family: 'DM Sans', sans-serif; }
+.chart svg .grid line { stroke: var(--border); }
+.chart svg .band { fill: var(--band); }
+.chart svg .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart svg circle { stroke: var(--card); stroke-width: 2; }
+.chart svg circle.ok { fill: var(--ok); } .chart svg circle.warn { fill: var(--warn); } .chart svg circle.bad { fill: var(--bad); }
+.chart .empty { color: var(--text-muted); font-size: .85rem; padding: 20px 0; text-align: center; }
+
+.entry { margin-bottom: 10px; }
+.entry .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.entry .date { font-weight: 700; }
+.entry .vals { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag { font-size: .8rem; border-radius: 8px; padding: 4px 8px; background: var(--accent-light); font-variant-numeric: tabular-nums; }
+.tag.ok { background: var(--ok-bg); } .tag.warn { background: var(--warn-bg); } .tag.bad { background: var(--bad-bg); }
+.tag b { font-weight: 500; color: var(--text-muted); margin-right: 3px; }
+.entry .note { font-size: .88rem; color: var(--text-muted); margin-top: 8px; white-space: pre-wrap; }
+.entry .acts { display: flex; gap: 6px; }
+.icon-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; cursor: pointer; color: var(--text-muted); font-size: .8rem; }
+
+table.ranges { width: 100%; border-collapse: collapse; font-size: .88rem; }
+table.ranges th { text-align: left; font-weight: 500; color: var(--text-muted); font-size: .75rem; padding: 4px; }
+table.ranges td { padding: 4px; vertical-align: middle; }
+table.ranges input[type=text] { padding: 7px 6px; font-size: 15px; text-align: center; }
+table.ranges td.p { white-space: nowrap; }
+table.ranges input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+.scroll-x { overflow-x: auto; }
+.muted { color: var(--text-muted); font-size: .85rem; line-height: 1.45; }
+.empty-state { text-align: center; padding: 40px 10px; color: var(--text-muted); }
+.empty-state .big { font-size: 3rem; margin-bottom: 8px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: .9rem; opacity: 0; transition: .25s; pointer-events: none; z-index: 20; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>🐠 Aquarium</h1>
+    <select class="tank" id="tankSelect" aria-label="Aquarium"></select>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+
+<nav>
+  <div class="wrap">
+    <button data-tab="dash" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Tableau
+    </button>
+    <button data-tab="charts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+      Courbes
+    </button>
+    <button data-tab="add" class="add">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      Mesure
+    </button>
+    <button data-tab="history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      Historique
+    </button>
+    <button data-tab="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Réglages
+    </button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept="application/json,.json" class="hidden">
+
+<script>
+/* ---------- Paramètres & valeurs de référence ---------- */
+const PARAMS = {
+  temp: { label: 'Température', short: 'T°', unit: '°C', dec: 1 },
+  ph:   { label: 'pH', short: 'pH', unit: '', dec: 2 },
+  gh:   { label: 'GH – dureté totale', short: 'GH', unit: '°d', dec: 0 },
+  kh:   { label: 'KH – dureté carbonatée', short: 'KH', unit: '°d', dec: 1 },
+  no2:  { label: 'Nitrites NO₂', short: 'NO₂', unit: 'mg/L', dec: 2 },
+  no3:  { label: 'Nitrates NO₃', short: 'NO₃', unit: 'mg/L', dec: 1 },
+  nh4:  { label: 'Ammonium NH₃/NH₄', short: 'NH₄', unit: 'mg/L', dec: 2 },
+  po4:  { label: 'Phosphates PO₄', short: 'PO₄', unit: 'mg/L', dec: 2 },
+  fe:   { label: 'Fer Fe', short: 'Fe', unit: 'mg/L', dec: 2 },
+  co2:  { label: 'CO₂', short: 'CO₂', unit: 'mg/L', dec: 0 },
+  sal:  { label: 'Densité', short: 'Dens.', unit: '', dec: 3 },
+  ca:   { label: 'Calcium Ca', short: 'Ca', unit: 'mg/L', dec: 0 },
+  mg:   { label: 'Magnésium Mg', short: 'Mg', unit: 'mg/L', dec: 0 },
+};
+
+// ok = plage idéale, warn = plage tolérée ; en dehors = alerte
+const PRESETS = {
+  douce: {
+    label: 'Eau douce tropicale',
+    params: ['temp', 'ph', 'gh', 'kh', 'no2', 'no3', 'nh4', 'po4'],
+    ranges: {
+      temp: { ok: [24, 27], warn: [22, 29] },
+      ph:   { ok: [6.5, 7.5], warn: [6.0, 8.0] },
+      gh:   { ok: [4, 12], warn: [3, 18] },
+      kh:   { ok: [3, 8], warn: [2, 12] },
+      no2:  { ok: [0, 0.05], warn: [0, 0.3] },
+      no3:  { ok: [0, 25], warn: [0, 50] },
+      nh4:  { ok: [0, 0.1], warn: [0, 0.5] },
+      po4:  { ok: [0, 1], warn: [0, 2] },
+      fe:   { ok: [0.05, 0.2], warn: [0, 0.5] },
+      co2:  { ok: [10, 30], warn: [5, 40] },
+      sal:  { ok: [1.0, 1.002], warn: [1.0, 1.005] },
+      ca:   { ok: [20, 80], warn: [10, 120] },
+      mg:   { ok: [5, 30], warn: [2, 50] },
+    },
+  },
+  froide: {
+    label: 'Eau froide (poissons rouges…)',
+    params: ['temp', 'ph', 'gh', 'kh', 'no2', 'no3', 'nh4'],
+    ranges: {
+      temp: { ok: [16, 22], warn: [12, 25] },
+      ph:   { ok: [7.0, 8.0], warn: [6.5, 8.5] },
+      gh:   { ok: [8, 16], warn: [5, 20] },
+      kh:   { ok: [5, 12], warn: [3, 15] },
+      no2:  { ok: [0, 0.05], warn: [0, 0.3] },
+      no3:  { ok: [0, 25], warn: [0, 50] },
+      nh4:  { ok: [0, 0.1], warn: [0, 0.5] },
+      po4:  { ok: [0, 1], warn: [0, 2] },
+      fe:   { ok: [0, 0.2], warn: [0, 0.5] },
+      co2:  { ok: [2, 15], warn: [0, 25] },
+      sal:  { ok: [1.0, 1.002], warn: [1.0, 1.005] },
+      ca:   { ok: [30, 100], warn: [15, 150] },
+      mg:   { ok: [5, 30], warn: [2, 50] },
+    },
+  },
+  mer: {
+    label: 'Eau de mer / récifal',
+    params: ['temp', 'sal', 'ph', 'kh', 'ca', 'mg', 'no2', 'no3', 'nh4', 'po4'],
+    ranges: {
+      temp: { ok: [24, 26.5], warn: [23, 28] },
+      sal:  { ok: [1.024, 1.026], warn: [1.022, 1.027] },
+      ph:   { ok: [8.0, 8.4], warn: [7.8, 8.6] },
+      gh:   { ok: [0, 100], warn: [0, 100] },
+      kh:   { ok: [7, 10], warn: [6, 12] },
+      ca:   { ok: [400, 450], warn: [380, 500] },
+      mg:   { ok: [1250, 1400], warn: [1150, 1500] },
+      no2:  { ok: [0, 0.05], warn: [0, 0.2] },
+      no3:  { ok: [1, 10], warn: [0, 25] },
+      nh4:  { ok: [0, 0.05], warn: [0, 0.2] },
+      po4:  { ok: [0.02, 0.1], warn: [0, 0.25] },
+      fe:   { ok: [0, 0.05], warn: [0, 0.1] },
+      co2:  { ok: [0, 10], warn: [0, 20] },
+    },
+  },
+};
+
+/* ---------- Stockage ---------- */
+const STORE_KEY = 'aquarium-params.v1';
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function newTank(name, type) {
+  const p = PRESETS[type];
+  return { id: uid(), name, type, volume: '', params: [...p.params], ranges: clone(p.ranges) };
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.tanks) && Array.isArray(d.entries) && d.tanks.length) return d;
+    }
+  } catch (e) {}
+  const t = newTank('Mon aquarium', 'douce');
+  return { tanks: [t], entries: [], current: t.id };
+}
+
+let db = load();
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
+  catch (e) { toast('⚠️ Impossible d’enregistrer sur cet appareil'); }
+}
+
+/* ---------- Utilitaires ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = s => { if (s === '' || s == null) return null; const n = parseFloat(String(s).replace(',', '.').trim()); return isFinite(n) ? n : null; };
+const fmt = (v, key) => v == null ? '–' : v.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: PARAMS[key]?.dec ?? 2 });
+const fmtR = (v, key) => v.toLocaleString('fr-FR', { maximumFractionDigits: Math.max(PARAMS[key]?.dec ?? 2, 3) });
+const tank = () => db.tanks.find(t => t.id === db.current) || db.tanks[0];
+const tankEntries = (t = tank()) => db.entries.filter(e => e.tankId === t.id).sort((a, b) => b.date.localeCompare(a.date));
+const dateFr = iso => new Date(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+const timeFr = iso => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const daysAgo = iso => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+const agoTxt = iso => { const d = daysAgo(iso); return d <= 0 ? 'aujourd’hui' : d === 1 ? 'hier' : `il y a ${d} j`; };
+const nowLocal = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+
+function status(t, key, v) {
+  const r = t.ranges[key];
+  if (v == null || !r) return 'none';
+  if (v >= r.ok[0] && v <= r.ok[1]) return 'ok';
+  if (v >= r.warn[0] && v <= r.warn[1]) return 'warn';
+  return 'bad';
+}
+const rangeTxt = (t, key) => { const r = t.ranges[key]; if (!r) return ''; return `${fmtR(r.ok[0], key)} – ${fmtR(r.ok[1], key)}`; };
+
+// CO₂ estimé à partir du pH et du KH (eau douce)
+const co2Estimate = (ph, kh) => (ph == null || kh == null) ? null : 3 * kh * Math.pow(10, 7 - ph);
+
+function lastValue(entries, key, skip = 0) {
+  let n = 0;
+  for (const e of entries) {
+    if (e.values[key] != null) { if (n === skip) return e; n++; }
+  }
+  return null;
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ---------- Navigation ---------- */
+let tab = 'dash';
+let editingId = null;
+let chartDays = 90;
+
+function go(t, opts = {}) {
+  tab = t;
+  editingId = opts.edit || null;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  render();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab === 'charts') chartFocus = null; go(b.dataset.tab); }));
+
+function renderTankSelect() {
+  const s = $('#tankSelect');
+  s.innerHTML = db.tanks.map(t => `<option value="${t.id}" ${t.id === tank().id ? 'selected' : ''}>${esc(t.name)}</option>`).join('');
+}
+$('#tankSelect').addEventListener('change', e => { db.current = e.target.value; save(); render(); });
+
+function render() {
+  renderTankSelect();
+  const v = $('#view');
+  ({ dash: renderDash, add: renderForm, charts: renderCharts, history: renderHistory, settings: renderSettings })[tab](v);
+}
+
+/* ---------- Tableau de bord ---------- */
+function renderDash(v) {
+  const t = tank();
+  const es = tankEntries(t);
+  if (!es.length) {
+    v.innerHTML = `<div class="empty-state"><div class="big">🧪</div>
+      <p>Aucune mesure pour <b>${esc(t.name)}</b>.</p>
+      <p class="muted" style="margin:8px 0 18px">Fais un test de ton eau et enregistre les résultats pour commencer le suivi.</p>
+      <button class="btn" onclick="go('add')">+ Ajouter une mesure</button></div>`;
+    return;
+  }
+  const alerts = [], warns = [];
+  const cards = t.params.map(key => {
+    const e = lastValue(es, key);
+    const val = e ? e.values[key] : null;
+    const st = status(t, key, val);
+    const prev = lastValue(es, key, 1);
+    let trend = '';
+    if (e && prev) {
+      const d = val - prev.values[key];
+      const cls = Math.abs(d) < 1e-9 ? 'eq' : d > 0 ? 'up' : 'down';
+      trend = `<span class="trend ${cls}">${cls === 'eq' ? '' : (d > 0 ? '+' : '−') + fmt(Math.abs(d), key)}</span>`;
+    }
+    if (st === 'bad') alerts.push(`${PARAMS[key].label} : ${fmt(val, key)} ${PARAMS[key].unit} (idéal ${rangeTxt(t, key)})`);
+    if (st === 'warn') warns.push(`${PARAMS[key].label} : ${fmt(val, key)} ${PARAMS[key].unit} (idéal ${rangeTxt(t, key)})`);
+    return `<div class="card stat ${st}" onclick="openChart('${key}')">
+      <div class="lbl"><span class="dot ${st}"></span>${esc(PARAMS[key].short)}</div>
+      <div class="val">${fmt(val, key)}<small>${PARAMS[key].unit}</small></div>
+      <div class="sub"><span>${e ? agoTxt(e.date) : 'jamais mesuré'}</span>${trend}</div>
+    </div>`;
+  }).join('');
+
+  let banner;
+  if (alerts.length) banner = `<div class="banner bad"><strong>⚠️ À surveiller de près</strong><ul>${alerts.map(a => `<li>${esc(a)}</li>`).join('')}</ul>${warns.length ? `<ul>${warns.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}</div>`;
+  else if (warns.length) banner = `<div class="banner warn"><strong>Quelques valeurs hors de l’idéal</strong><ul>${warns.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
+  else banner = `<div class="banner ok"><strong>✅ Tout est dans les clous</strong>Les dernières valeurs mesurées sont dans les plages idéales.</div>`;
+
+  const lastTest = es[0];
+  const lastWc = es.find(e => e.waterChange);
+  let extra = '';
+  if (t.type !== 'mer') {
+    const ph = lastValue(es, 'ph'), kh = lastValue(es, 'kh');
+    const co2 = co2Estimate(ph?.values.ph, kh?.values.kh);
+    if (co2 != null) extra = `<div class="card"><div class="k">CO₂ estimé (pH/KH)</div><div class="v">${fmt(co2, 'co2')} mg/L</div></div>`;
+  }
+  v.innerHTML = `
+    ${banner}
+    <h2>Dernières valeurs</h2>
+    <div class="grid">${cards}</div>
+    <div class="meta">
+      <div class="card"><div class="k">Dernier test</div><div class="v">${agoTxt(lastTest.date)}</div></div>
+      <div class="card"><div class="k">Dernier changement d’eau</div><div class="v">${lastWc ? `${agoTxt(lastWc.date)} · ${fmt(lastWc.waterChange, 'no3')} %` : '–'}</div></div>
+      ${t.volume ? `<div class="card"><div class="k">Volume</div><div class="v">${esc(t.volume)} L</div></div>` : ''}
+      <div class="card"><div class="k">Mesures enregistrées</div><div class="v">${es.length}</div></div>
+      ${extra}
+    </div>
+    <p class="muted" style="margin-top:14px">Touchez une valeur pour voir sa courbe.</p>`;
+}
+let chartFocus = null;
+function openChart(key) { chartFocus = key; go('charts'); }
+
+/* ---------- Saisie ---------- */
+function renderForm(v) {
+  const t = tank();
+  const e = editingId ? db.entries.find(x => x.id === editingId) : null;
+  const vals = e ? e.values : {};
+  const inputs = t.params.map(key => {
+    const val = vals[key];
+    const st = status(t, key, val ?? null);
+    return `<div class="pin ${st === 'none' ? '' : st}" data-key="${key}">
+      <label for="p_${key}">${esc(PARAMS[key].short)} <span>${PARAMS[key].unit}</span></label>
+      <input type="text" inputmode="decimal" id="p_${key}" name="${key}" autocomplete="off" value="${val != null ? String(val).replace('.', ',') : ''}" placeholder="–">
+      <div class="hint">idéal ${rangeTxt(t, key)}</div>
+    </div>`;
+  }).join('');
+  v.innerHTML = `
+    <h2>${e ? 'Modifier la mesure' : 'Nouvelle mesure'} · ${esc(t.name)}</h2>
+    <form id="entryForm" novalidate>
+      <div class="field"><label class="l" for="f_date">Date et heure</label>
+        <input type="datetime-local" id="f_date" required value="${e ? e.date : nowLocal()}"></div>
+      <label class="l">Résultats des tests <span class="muted">(laisse vide ce que tu n’as pas mesuré)</span></label>
+      <div class="pgrid">${inputs}</div>
+      <div class="field" style="margin-top:14px"><label class="l" for="f_wc">Changement d’eau (%)</label>
+        <input type="text" inputmode="decimal" id="f_wc" placeholder="ex. 20" value="${e?.waterChange ?? ''}"></div>
+      <div class="field"><label class="l" for="f_note">Notes</label>
+        <textarea id="f_note" placeholder="Ajout d’engrais, nouveau poisson, comportement…">${esc(e?.note || '')}</textarea></div>
+      <div class="row">
+        ${e ? `<button type="button" class="btn ghost" onclick="go('history')">Annuler</button>` : ''}
+        <button type="submit" class="btn block">${e ? 'Enregistrer les modifications' : 'Enregistrer la mesure'}</button>
+      </div>
+    </form>`;
+
+  v.querySelectorAll('.pin input').forEach(inp => inp.addEventListener('input', () => {
+    const pin = inp.closest('.pin');
+    const st = status(t, pin.dataset.key, num(inp.value));
+    pin.className = 'pin' + (st === 'none' ? '' : ' ' + st);
+  }));
+
+  $('#entryForm').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const values = {};
+    let bad = null;
+    t.params.forEach(key => {
+      const raw = $('#p_' + key).value.trim();
+      if (!raw) return;
+      const n = num(raw);
+      if (n == null) bad = bad || key; else values[key] = n;
+    });
+    if (bad) { toast(`Valeur invalide pour ${PARAMS[bad].short}`); $('#p_' + bad).focus(); return; }
+    const wc = num($('#f_wc').value);
+    const note = $('#f_note').value.trim();
+    const date = $('#f_date').value || nowLocal();
+    if (!Object.keys(values).length && !wc && !note) { toast('Saisis au moins une valeur'); return; }
+    if (e) {
+      // garde les valeurs de paramètres désactivés depuis
+      Object.keys(e.values).forEach(k => { if (!t.params.includes(k)) values[k] = e.values[k]; });
+      Object.assign(e, { date, values, waterChange: wc, note });
+      toast('Mesure modifiée');
+    } else {
+      db.entries.push({ id: uid(), tankId: t.id, date, values, waterChange: wc, note });
+      toast('Mesure enregistrée 🐟');
+    }
+    save();
+    go(e ? 'history' : 'dash');
+  });
+}
+
+/* ---------- Courbes ---------- */
+function chartSVG(t, key, pts) {
+  const W = 360, H = 170, pl = 36, pr = 8, pt = 8, pb = 20;
+  const r = t.ranges[key];
+  const vals = pts.map(p => p.v);
+  let lo = Math.min(...vals, r ? r.ok[0] : Infinity), hi = Math.max(...vals, r ? r.ok[1] : -Infinity);
+  if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+  const pad = (hi - lo) * 0.12; lo -= pad; hi += pad;
+  if (Math.min(...vals) >= 0 && lo < 0) lo = 0;
+  let t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+  if (t1 - t0 < 86400000) { t0 -= 43200000; t1 += 43200000; }
+  const x = tt => pl + (tt - t0) / (t1 - t0) * (W - pl - pr);
+  const y = vv => pt + (1 - (vv - lo) / (hi - lo)) * (H - pt - pb);
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbe ${esc(PARAMS[key].label)}">`;
+  if (r) {
+    const yTop = y(Math.min(r.ok[1], hi)), yBot = y(Math.max(r.ok[0], lo));
+    if (yBot > yTop) s += `<rect class="band" x="${pl}" y="${yTop}" width="${W - pl - pr}" height="${yBot - yTop}"/>`;
+  }
+  s += '<g class="grid">';
+  for (let i = 0; i <= 4; i++) {
+    const vv = lo + (hi - lo) * i / 4, yy = y(vv);
+    s += `<line x1="${pl}" x2="${W - pr}" y1="${yy}" y2="${yy}"/><text x="${pl - 4}" y="${yy + 3}" text-anchor="end">${fmt(+vv.toPrecision(3), key)}</text>`;
+  }
+  s += '</g>';
+  const nTicks = Math.min(4, pts.length > 1 ? 4 : 1);
+  for (let i = 0; i <= nTicks; i++) {
+    const tt = t0 + (t1 - t0) * (nTicks ? i / nTicks : 0.5);
+    const anchor = i === 0 ? 'start' : i === nTicks ? 'end' : 'middle';
+    s += `<text x="${x(tt)}" y="${H - 5}" text-anchor="${anchor}">${new Date(tt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</text>`;
+  }
+  if (pts.length > 1) s += `<path class="line" d="${pts.map((p, i) => (i ? 'L' : 'M') + x(p.t).toFixed(1) + ' ' + y(p.v).toFixed(1)).join(' ')}"/>`;
+  pts.forEach(p => {
+    s += `<circle class="${status(t, key, p.v)}" cx="${x(p.t).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="${pts.length > 40 ? 2.5 : 3.5}"><title>${dateFr(p.iso)} : ${fmt(p.v, key)} ${PARAMS[key].unit}</title></circle>`;
+  });
+  return s + '</svg>';
+}
+
+function renderCharts(v) {
+  const t = tank();
+  const since = chartDays ? Date.now() - chartDays * 86400000 : -Infinity;
+  const es = tankEntries(t).slice().reverse();
+  const periods = [[30, '30 j'], [90, '3 mois'], [365, '1 an'], [0, 'Tout']];
+  const keys = chartFocus && t.params.includes(chartFocus) ? [chartFocus] : t.params;
+  const charts = keys.map(key => {
+    const pts = es.filter(e => e.values[key] != null).map(e => ({ t: new Date(e.date).getTime(), v: e.values[key], iso: e.date })).filter(p => p.t >= since);
+    return `<div class="card chart">
+      <div class="head"><b>${esc(PARAMS[key].label)}${PARAMS[key].unit ? ` <span>(${PARAMS[key].unit})</span>` : ''}</b><span>idéal ${rangeTxt(t, key)}</span></div>
+      ${pts.length ? chartSVG(t, key, pts) : '<div class="empty">Pas de mesure sur cette période</div>'}
+    </div>`;
+  }).join('');
+  v.innerHTML = `
+    <h2>Évolution · ${esc(t.name)}</h2>
+    <div class="chips">${periods.map(([d, l]) => `<button class="chip ${chartDays === d ? 'active' : ''}" onclick="chartDays=${d};render()">${l}</button>`).join('')}</div>
+    <div class="chips">
+      <button class="chip ${!chartFocus ? 'active' : ''}" onclick="chartFocus=null;render()">Tous</button>
+      ${t.params.map(k => `<button class="chip ${chartFocus === k ? 'active' : ''}" onclick="chartFocus='${k}';render()">${esc(PARAMS[k].short)}</button>`).join('')}
+    </div>
+    ${charts}
+    <p class="muted">La bande verte représente la plage idéale. Points : <span class="dot ok"></span> idéal · <span class="dot warn"></span> toléré · <span class="dot bad"></span> hors limites.</p>`;
+}
+
+/* ---------- Historique ---------- */
+function renderHistory(v) {
+  const t = tank();
+  const es = tankEntries(t);
+  if (!es.length) {
+    v.innerHTML = `<div class="empty-state"><div class="big">📋</div><p>Aucune mesure enregistrée.</p></div>`;
+    return;
+  }
+  v.innerHTML = `<h2>Historique · ${esc(t.name)}</h2>` + es.map(e => {
+    const tags = Object.keys(PARAMS).filter(k => e.values[k] != null).map(k =>
+      `<span class="tag ${status(t, k, e.values[k])}"><b>${esc(PARAMS[k].short)}</b>${fmt(e.values[k], k)}</span>`).join('');
+    return `<div class="card entry">
+      <div class="top">
+        <div><div class="date">${dateFr(e.date)}</div><div class="muted">${timeFr(e.date)} · ${agoTxt(e.date)}</div></div>
+        <div class="acts">
+          <button class="icon-btn" onclick="go('add',{edit:'${e.id}'})" aria-label="Modifier">✏️</button>
+          <button class="icon-btn" onclick="delEntry('${e.id}')" aria-label="Supprimer">🗑️</button>
+        </div>
+      </div>
+      ${tags || e.waterChange ? `<div class="vals">${tags}${e.waterChange ? `<span class="tag">💧 ${fmt(e.waterChange, 'no3')} % d’eau changée</span>` : ''}</div>` : ''}
+      ${e.note ? `<div class="note">${esc(e.note)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function delEntry(id) {
+  if (!confirm('Supprimer cette mesure ?')) return;
+  db.entries = db.entries.filter(e => e.id !== id);
+  save(); render(); toast('Mesure supprimée');
+}
+
+/* ---------- Réglages ---------- */
+function renderSettings(v) {
+  const t = tank();
+  const rows = Object.keys(PARAMS).map(key => {
+    const r = t.ranges[key] || PRESETS[t.type].ranges[key] || { ok: [0, 0], warn: [0, 0] };
+    const f = n => String(n).replace('.', ',');
+    return `<tr data-key="${key}">
+      <td><input type="checkbox" ${t.params.includes(key) ? 'checked' : ''} aria-label="Suivre ${esc(PARAMS[key].short)}"></td>
+      <td class="p">${esc(PARAMS[key].short)} <span class="muted">${PARAMS[key].unit}</span></td>
+      <td><input type="text" inputmode="decimal" data-r="ok0" value="${f(r.ok[0])}"></td>
+      <td><input type="text" inputmode="decimal" data-r="ok1" value="${f(r.ok[1])}"></td>
+      <td><input type="text" inputmode="decimal" data-r="warn0" value="${f(r.warn[0])}"></td>
+      <td><input type="text" inputmode="decimal" data-r="warn1" value="${f(r.warn[1])}"></td>
+    </tr>`;
+  }).join('');
+  v.innerHTML = `
+    <h2>Mon aquarium</h2>
+    <div class="card">
+      <div class="field"><label class="l" for="s_name">Nom</label><input type="text" id="s_name" value="${esc(t.name)}"></div>
+      <div class="row">
+        <div class="field"><label class="l" for="s_type">Type</label>
+          <select id="s_type">${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}" ${t.type === k ? 'selected' : ''}>${p.label}</option>`).join('')}</select></div>
+        <div class="field"><label class="l" for="s_vol">Volume (L)</label><input type="text" inputmode="decimal" id="s_vol" value="${esc(t.volume)}"></div>
+      </div>
+      <button class="btn block" id="s_save">Enregistrer</button>
+    </div>
+
+    <h2>Paramètres suivis & plages</h2>
+    <div class="card">
+      <p class="muted" style="margin-bottom:10px">Coche les paramètres que tu testes. Ajuste les plages selon tes espèces : <b>idéal</b> = vert, <b>toléré</b> = orange, en dehors = rouge.</p>
+      <div class="scroll-x"><table class="ranges">
+        <thead><tr><th></th><th>Param.</th><th>Idéal min</th><th>Idéal max</th><th>Toléré min</th><th>Toléré max</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" id="s_reset">Valeurs par défaut</button>
+        <button class="btn" id="s_ranges">Enregistrer les plages</button>
+      </div>
+    </div>
+
+    <h2>Mes aquariums</h2>
+    <div class="card">
+      <div class="row">
+        <button class="btn ghost" id="s_add">+ Nouvel aquarium</button>
+        ${db.tanks.length > 1 ? `<button class="btn danger" id="s_del">Supprimer « ${esc(t.name)} »</button>` : ''}
+      </div>
+    </div>
+
+    <h2>Sauvegarde</h2>
+    <div class="card">
+      <p class="muted" style="margin-bottom:10px">Les données sont stockées uniquement sur cet appareil, dans ce navigateur. Exporte-les régulièrement pour ne rien perdre ou pour les transférer sur un autre appareil.</p>
+      <div class="row">
+        <button class="btn ghost" id="s_export">Exporter (JSON)</button>
+        <button class="btn ghost" id="s_csv">Exporter (CSV)</button>
+        <button class="btn ghost" id="s_import">Importer</button>
+      </div>
+    </div>
+
+    <h2>Apparence</h2>
+    <div class="chips">
+      ${[['', 'Auto'], ['light', 'Clair'], ['dark', 'Sombre']].map(([k, l]) => `<button class="chip ${(db.theme || '') === k ? 'active' : ''}" onclick="setTheme('${k}')">${l}</button>`).join('')}
+    </div>
+    <p class="muted" style="margin:24px 0 8px">Les plages par défaut sont des repères généraux : vérifie les besoins spécifiques de tes poissons et plantes.</p>`;
+
+  $('#s_save').onclick = () => {
+    const name = $('#s_name').value.trim() || 'Mon aquarium';
+    const type = $('#s_type').value;
+    if (type !== t.type && confirm('Changer de type ? Les paramètres suivis et les plages seront remplacés par ceux du nouveau type.')) {
+      t.type = type; t.params = [...PRESETS[type].params]; t.ranges = clone(PRESETS[type].ranges);
+    }
+    t.name = name; t.volume = $('#s_vol').value.trim();
+    save(); render(); toast('Aquarium enregistré');
+  };
+  $('#s_ranges').onclick = () => {
+    const params = [], ranges = {};
+    let err = null;
+    v.querySelectorAll('table.ranges tbody tr').forEach(tr => {
+      const key = tr.dataset.key;
+      const g = r => num(tr.querySelector(`[data-r="${r}"]`).value);
+      const ok0 = g('ok0'), ok1 = g('ok1'), w0 = g('warn0'), w1 = g('warn1');
+      if ([ok0, ok1, w0, w1].some(n => n == null) || ok0 > ok1 || w0 > w1) { err = err || key; return; }
+      ranges[key] = { ok: [ok0, ok1], warn: [Math.min(w0, ok0), Math.max(w1, ok1)] };
+      if (tr.querySelector('input[type=checkbox]').checked) params.push(key);
+    });
+    if (err) { toast(`Plage invalide pour ${PARAMS[err].short}`); return; }
+    if (!params.length) { toast('Sélectionne au moins un paramètre'); return; }
+    t.params = params; t.ranges = ranges;
+    save(); render(); toast('Plages enregistrées');
+  };
+  $('#s_reset').onclick = () => {
+    if (!confirm('Remettre les plages et paramètres par défaut pour ce type d’aquarium ?')) return;
+    t.params = [...PRESETS[t.type].params]; t.ranges = clone(PRESETS[t.type].ranges);
+    save(); render(); toast('Valeurs par défaut restaurées');
+  };
+  $('#s_add').onclick = () => {
+    const name = prompt('Nom du nouvel aquarium ?', 'Aquarium ' + (db.tanks.length + 1));
+    if (!name) return;
+    const nt = newTank(name.trim(), 'douce');
+    db.tanks.push(nt); db.current = nt.id;
+    save(); render(); toast('Aquarium créé – choisis son type ci-dessus');
+  };
+  if ($('#s_del')) $('#s_del').onclick = () => {
+    const n = tankEntries(t).length;
+    if (!confirm(`Supprimer « ${t.name} » et ses ${n} mesure(s) ? Cette action est définitive.`)) return;
+    db.entries = db.entries.filter(e => e.tankId !== t.id);
+    db.tanks = db.tanks.filter(x => x.id !== t.id);
+    db.current = db.tanks[0].id;
+    save(); render(); toast('Aquarium supprimé');
+  };
+  $('#s_export').onclick = () => download(`aquarium-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(db, null, 2), 'application/json');
+  $('#s_csv').onclick = exportCSV;
+  $('#s_import').onclick = () => $('#importFile').click();
+}
+
+function download(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function exportCSV() {
+  const keys = Object.keys(PARAMS);
+  const q = s => `"${String(s ?? '').replace(/"/g, '""')}"`;
+  const lines = [['Aquarium', 'Date', ...keys.map(k => PARAMS[k].short + (PARAMS[k].unit ? ` (${PARAMS[k].unit})` : '')), 'Changement d’eau (%)', 'Notes'].map(q).join(';')];
+  db.entries.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(e => {
+    const t = db.tanks.find(x => x.id === e.tankId);
+    lines.push([t?.name, e.date.replace('T', ' '), ...keys.map(k => e.values[k] != null ? String(e.values[k]).replace('.', ',') : ''), e.waterChange ?? '', e.note].map(q).join(';'));
+  });
+  download(`aquarium-${new Date().toISOString().slice(0, 10)}.csv`, '﻿' + lines.join('\n'), 'text/csv');
+}
+$('#importFile').addEventListener('change', ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (!d || !Array.isArray(d.tanks) || !Array.isArray(d.entries) || !d.tanks.length) throw 0;
+      if (!confirm(`Importer ${d.tanks.length} aquarium(s) et ${d.entries.length} mesure(s) ? Les données actuelles seront remplacées.`)) return;
+      db = d; if (!db.tanks.some(t => t.id === db.current)) db.current = db.tanks[0].id;
+      save(); applyTheme(); render(); toast('Import réussi');
+    } catch (e) { toast('Fichier invalide'); }
+  };
+  rd.readAsText(f);
+  ev.target.value = '';
+});
+
+function applyTheme() {
+  if (db.theme) document.documentElement.dataset.theme = db.theme;
+  else delete document.documentElement.dataset.theme;
+}
+function setTheme(k) { db.theme = k; save(); applyTheme(); render(); }
+
+applyTheme();
+render();
+</script>
+</body>
+</html>
